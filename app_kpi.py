@@ -89,6 +89,7 @@ else:
 # Display recorded predictions
 if os.path.exists(predictions_file):
     st.header('Recorded Predictions')
+    st.subheader('Impression and reach estimates are estimates for one month with 30 days')
     df_predictions = pd.read_csv(predictions_file)
     
     # Format columns with commas for better readability
