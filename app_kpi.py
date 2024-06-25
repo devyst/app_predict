@@ -103,5 +103,25 @@ if os.path.exists(predictions_file):
     # Format columns with commas for better readability
     df_predictions['Estimated Impressions'] = df_predictions['Estimated Impressions'].apply(lambda x: '{:,}'.format(x))
     df_predictions['Estimated Reach'] = df_predictions['Estimated Reach'].apply(lambda x: '{:,}'.format(x))
+
+    # Apply color formatting
+    st.markdown(
+        """
+        <style>
+        .highlight-industry {
+            color: blue;
+        }
+        .highlight-objective {
+            color: green;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+    # Highlight Industry and Objective columns
+    df_predictions_html = df_predictions.to_html(escape=False, index=False).replace(
+        '<td>Industry</td>', '<td class="highlight-industry">Industry</td>'
+    ).replace(
+        '<td>Objective</td>', '<td class="highlight-objective">Objective</td>'
+    )
     
-    st.table(df_predictions)
+    st.markdown(df_predictions_html, unsafe_allow_html=True)
