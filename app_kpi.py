@@ -15,13 +15,16 @@ def load_data():
 data = load_data()
 
 # Preprocessing
+le_industry = LabelEncoder().fit(data['Industry'])
 le_objective = LabelEncoder().fit(data['Objective'])
 le_platform = LabelEncoder().fit(data['Platform'])
+data['Industry'] = le_industry.transform(data['Industry'])
 data['Objective'] = le_objective.transform(data['Objective'])
 data['Platform'] = le_platform.transform(data['Platform'])
 
 # Sidebar
 st.sidebar.title('Select Parameters')
+industry = st.sidebar.selectbox('Industry', le_industry.classes_)
 objective = st.sidebar.selectbox('Objective', le_objective.classes_)
 platform = st.sidebar.radio('Platform', ['Facebook', 'Instagram'])
 monthly_budget = st.sidebar.number_input('Enter Monthly Budget (IDR)', min_value=0)
@@ -38,7 +41,7 @@ predictions_file = 'predictions.csv'
 
 # Check if predictions file exists, if not create it
 if not os.path.exists(predictions_file):
-    df_empty = pd.DataFrame(columns=['Objective', 'Platform', 'Monthly Budget (IDR)', 'Estimated Impressions', 'Estimated Reach'])
+    df_empty = pd.DataFrame(columns=['Industry', 'Objective', 'Platform', 'Monthly Budget (IDR)', 'Estimated Impressions', 'Estimated Reach'])
     df_empty.to_csv(predictions_file, index=False)
 
 # Function to save predictions to CSV
@@ -46,12 +49,16 @@ def save_to_csv(predictions):
     df = pd.DataFrame(predictions)
     df.to_csv(predictions_file, mode='a', index=False, header=False)
 
-# Filter data based on selected objective and platform
-filtered_data = data[(data['Objective'] == le_objective.transform([objective])[0]) & (data['Platform'] == le_platform.transform([platform.lower()])[0])]
+# Filter data based on selected industry, objective, and platform
+filtered_data = data[
+    (data['Industry'] == le_industry.transform([industry])[0]) & 
+    (data['Objective'] == le_objective.transform([objective])[0]) & 
+    (data['Platform'] == le_platform.transform([platform.lower()])[0])
+]
 
 # Check if filtered data is empty
 if filtered_data.empty:
-    st.error('No data available for selected Objective and Platform. Please choose different parameters.')
+    st.error('No data available for selected Industry, Objective, and Platform. Please choose different parameters.')
 else:
     # Calculate daily budget
     daily_budget = monthly_budget / 30.0
@@ -76,6 +83,7 @@ else:
 
         # Record predictions
         prediction_records.append({
+            'Industry': industry,
             'Objective': objective,
             'Platform': platform,
             'Monthly Budget (IDR)': monthly_budget_str,
